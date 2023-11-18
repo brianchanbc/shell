@@ -96,6 +96,19 @@ int optional_args(int* argc, char* argv[], int* s, int* j, int* l) {
 
     int opt = 0;
     opterr = 0;
+
+    int is_integer(const char *str) {
+        char *end;
+        strtol(str, &end, 10);
+        return end != str && *end == '\0';
+    }
+    for (int i = 1; i < *argc; i++) {
+        // Check if optional argument other than -l, -s, -j or their respective numbers are provided
+        if (strcmp(argv[i], "-l") != 0 && strcmp(argv[i], "-s") != 0 && strcmp(argv[i], "-j") != 0 && !is_integer(argv[i])) {
+            return 1;
+        }
+    }
+
     // Parse optional arguments
     while((opt = getopt(*argc, argv, "j:l:s:")) != -1)  
     {  

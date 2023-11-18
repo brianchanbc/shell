@@ -1,5 +1,7 @@
 #include "shell.h"
 
+extern char **environ;
+
 msh_t *alloc_shell(int max_jobs, int max_line, int max_history) {
     msh_t *shell = malloc(sizeof(msh_t));
     // Checks if parameters are 0, if so, set to default constant values
@@ -7,6 +9,8 @@ msh_t *alloc_shell(int max_jobs, int max_line, int max_history) {
     shell->max_jobs = max_jobs == 0 ? 16 : max_jobs; 
     shell->max_line = max_line == 0 ? 1024 : max_line;
     shell->max_history = max_history == 0 ? 10 : max_history;
+    // Allocate memory for jobs to the size of max_jobs
+    shell->jobs = malloc(shell->max_jobs * sizeof(job_t));
     return shell;
 }
 
@@ -77,7 +81,9 @@ int evaluate(msh_t *shell, char *line) {
     char * command = NULL;
     int job_type = 0;
     int argc;
+    pid_t pid;
     char **argv = NULL;
+    int child_status;
     // Check if the line is too long
     if (strlen(line) > shell->max_line) {
         printf("error: reached the maximum line limit\n");
@@ -91,19 +97,68 @@ int evaluate(msh_t *shell, char *line) {
             // For each command, separate the arguments and print them all
             argc = 0;
             argv = separate_args(command, &argc, NULL);
-            for (int i = 0; i < argc; i++) {
-                printf("argv[%d]=%s\n", i, argv[i]);
+            // Fork a new child process to handle the execution of the current job
+            pid = fork();
+            if (pid == 0) {
+                // Child executes the command
+                if (execve(argv[0], argv, environ) < 0) {
+                    printf("%s: Command not found.\n", argv[0]);
+                    free(argv);
+                    exit(1);
+                }
+            } else {
+                if (job_type == 1) {
+                    // Add the foreground job to the jobs array
+                    if (! add_job(shell->jobs, shell->max_jobs, pid, FOREGROUND, command)) {
+                        // If there is no more capacity for more jobs, print error message and exit
+                        free(argv);
+                        return 1;
+                    }
+                } else {
+                    // Add the background job to the jobs array
+                    if (! add_job(shell->jobs, shell->max_jobs, pid, BACKGROUND, command)) {
+                        // If there is no more capacity for more jobs, print error message and exit
+                        free(argv);
+                        return 1;
+                    }
+                }
+                if (job_type == 1) {
+                    // Wait for foreground jobs to finish
+                    pid_t w_pid = waitpid(pid, &child_status, WUNTRACED);
+                    if (WIFEXITED(child_status)) {
+                        delete_job(shell->jobs, shell->max_jobs, w_pid);
+                    }
+                }                
             }
-            // Free the memory allocated to argv
-            free(argv);
-            // Also print argument count
-            printf("argc=%d\n", argc);
+            free(argv);           
         }
     } while (command != NULL);
+
+    // Wait for foreground jobs to finish
+    for (int i = 0; i < shell->max_jobs; i++) {
+        if (shell->jobs[i].state == FOREGROUND) {
+            int child_status;
+            pid_t w_pid = wait(&child_status);
+            if (WIFEXITED(child_status)) {
+                delete_job(shell->jobs, shell->max_jobs, w_pid);
+            }
+        }
+    }
+
+    // Check for any background jobs and free memory
+    for (int i = 0; i < shell->max_jobs; i++) {
+        if (shell->jobs[i].state == BACKGROUND && shell->jobs[i].cmd_line != NULL) {
+            free(shell->jobs[i].cmd_line);
+            shell->jobs[i].cmd_line = NULL;
+        }
+    }
+    
     return 0;
 }
 
 void exit_shell(msh_t *shell) {
+    // To deallocate jobs
+    free_jobs(shell->jobs, shell->max_jobs);
     // Deallocate shell memory 
     free(shell);
 }

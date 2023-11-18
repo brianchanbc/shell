@@ -6,12 +6,15 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <unistd.h>
+#include <sys/wait.h>
+#include "job.h"
 
 // Represents the state of the shell
 typedef struct msh {
    int max_jobs;
    int max_line;
    int max_history;
+   job_t *jobs;
 }msh_t;
 
 /*
