@@ -34,26 +34,21 @@ int main(int argc, char *argv[]) {
 
     char *line = NULL;
     size_t len = 0;
+    long read;
     printf("msh> ");
-    // Read the first line
-    long nRead = getline(&line, &len, stdin);
-    while ( nRead != -1) {
-        // Check if the command is exit, if so then exit the shell
-        if (strcmp(line, "exit\n") == 0) {
+    while ((read = getline(&line, &len, stdin)) != -1) {
+        // Remove newline character
+        line[strcspn(line, "\n")] = 0;  
+        // If evaluate returns 1, there is an issue. Break and exit
+        if (evaluate(shell, line) == 1) {
             free(line);
+            line = NULL;
             break;
         }
-        // Evaluate the command
-        if (strlen(line) > 0) {
-            line[strlen(line) - 1] = '\0';
-        }
-        evaluate(shell, line);
-        // Free line memory before getting the next line
+        // Free the line and set it to NULL
         free(line);
-        // Reset line back to null for the next line
         line = NULL;
         printf("msh> ");
-        nRead = getline(&line, &len, stdin);
     }
     
     // Free the shell memory
@@ -81,6 +76,16 @@ int parse_option(char opt, char* optarg, int* option) {
     return 0;
 }
 
+int is_integer(const char *str) {
+    // Helper function to check if a string is an integer
+    char *end;
+    // strtol returns 0 if no conversion could be performed
+    // 10 is the base of the integer
+    strtol(str, &end, 10);
+    // Check if the end of the string is reached and the string is not empty
+    return end != str && *end == '\0';
+}
+
 int optional_args(int* argc, char* argv[], int* s, int* j, int* l) {
     /*
     Function to parse optional arguments
@@ -97,11 +102,6 @@ int optional_args(int* argc, char* argv[], int* s, int* j, int* l) {
     int opt = 0;
     opterr = 0;
 
-    int is_integer(const char *str) {
-        char *end;
-        strtol(str, &end, 10);
-        return end != str && *end == '\0';
-    }
     for (int i = 1; i < *argc; i++) {
         // Check if optional argument other than -l, -s, -j or their respective numbers are provided
         if (strcmp(argv[i], "-l") != 0 && strcmp(argv[i], "-s") != 0 && strcmp(argv[i], "-j") != 0 && !is_integer(argv[i])) {
