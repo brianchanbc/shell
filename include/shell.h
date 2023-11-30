@@ -9,6 +9,10 @@
 #include <unistd.h>
 #include <sys/wait.h>
 #include "job.h"
+#include "history.h"
+#include "signal_handlers.h"
+#include "csapp.h"
+#include <signal.h>
 
 // Represents the state of the shell
 typedef struct msh {
@@ -16,6 +20,7 @@ typedef struct msh {
    int max_line;
    int max_history;
    job_t *jobs;
+   history_t *history;
 }msh_t;
 
 /*
@@ -68,6 +73,16 @@ char **separate_args(char *line, int *argc, bool *is_builtin);
 * Returns: non-zero if the command executed wants the shell program to close. Otherwise, a 0 is returned.
 */
 int evaluate(msh_t *shell, char *line);
+
+/*
+* builtin_cmd - executes the built-in command
+*
+* argv - the arguments of the built-in command
+*
+* Returns: NULL if the nothing additional needs to be done; 
+otherwise, chosen command line history.
+*/
+char *builtin_cmd(char **argv);
 
 /*
 * exit_shell - Closes down the shell by deallocating the shell state.

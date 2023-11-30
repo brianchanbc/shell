@@ -35,6 +35,21 @@ typedef struct job {
 bool add_job(job_t *jobs, int max_jobs, pid_t pid, job_state_t state, const char *cmd_line);
 
 /*
+* change_job_state: change the state of a job in the jobs array based on the pid_t and job_state_t provided
+*
+* jobs: the jobs array
+*
+* max_jobs: the maximum number of jobs
+*
+* pid: the process id of the job to change
+*
+* state: the state to change the job to
+*
+* returns: true if the job was changed successfully, false if the job was not found
+*/
+bool change_job_state(job_t *jobs, int max_jobs, pid_t pid, job_state_t state);
+
+/*
 * delete_job: remove a job from the jobs array based on the pid_t provided
 *
 * jobs: the jobs array
@@ -56,5 +71,39 @@ bool delete_job(job_t *jobs, int max_jobs, pid_t pid);
 */
 void free_jobs(job_t *jobs, int max_jobs);
 
+/*
+* print_jobs: print all the jobs in the jobs array
+*
+* jobs: the jobs array
+*
+* max_jobs: the maximum number of jobs
+*/
+void print_jobs(job_t *jobs, int max_jobs);
+
+/*
+* get_job_pid: get the process id of a job in the jobs array based on the job id provided
+*
+* jobs: the jobs array
+*
+* max_jobs: the maximum number of jobs
+*
+* jid: the job id of the job to get the process id for
+*
+* returns: the process id of the job if the job was found, -1 if the job was not found
+*/
+pid_t get_job_pid(job_t *jobs, int max_jobs, int jid);
+
+/*
+* get_job_jid: get the job id of a job in the jobs array based on the process id provided
+*
+* jobs: the jobs array
+*
+* max_jobs: the maximum number of jobs
+*
+* pid: the process id of the job to get the job id for
+*
+* returns: the job id of the job if the job was found, -1 if the job was not found
+*/
+int get_job_jid(job_t *jobs, int max_jobs, pid_t pid);
 
 #endif

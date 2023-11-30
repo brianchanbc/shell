@@ -1,8 +1,25 @@
 #define _GNU_SOURCE
 #include "shell.h"
+#include "common.c"
 
 int parse_option(char opt, char* optarg, int* option);
 int optional_args(int* argc, char* argv[], int* s, int* j, int* l);
+
+/*
+GRADERS ATTENTION!!!
+
+FOR TESTING PURPOSES ONLY
+
+FOR TESTING HISTORY, USE THE BELOW COMMAND:
+gcc -I../include/ -o test_history ../src/common.c ../src/csapp.c ../src/history.c ../src/signal_handlers.c ../src/shell.c ../src/job.c test_history.c && ./test_history
+
+FOR TESTING SEPARATE ARGS, USE THE BELOW COMMAND:
+gcc -I../include/ -o test_seperate_args ../src/common.c ../src/csapp.c ../src/history.c ../src/signal_handlers.c ../src/shell.c ../src/job.c test_separate_args.c && ./test_seperate_args
+
+FOR TESTING HISTORY, USE THE BELOW COMMAND:
+gcc -I../include/ -o test_parse_tok ../src/common.c ../src/csapp.c ../src/history.c ../src/signal_handlers.c ../src/shell.c ../src/job.c test_parse_tok.c && ./test_parse_tok
+
+*/
 
 int main(int argc, char *argv[]) {
     /*
@@ -30,7 +47,7 @@ int main(int argc, char *argv[]) {
     }
 
     // Initialize the shell and allocate memory
-    msh_t *shell = alloc_shell(j, l, s);
+    shell = alloc_shell(j, l, s);
 
     char *line = NULL;
     size_t len = 0;
@@ -50,7 +67,6 @@ int main(int argc, char *argv[]) {
         line = NULL;
         printf("msh> ");
     }
-    
     // Free the shell memory
     exit_shell(shell);
     return 0;
