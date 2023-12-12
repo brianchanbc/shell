@@ -1,2 +1,2 @@
-# msh
-The starter code for the msh shell 
+# Shell
+This project is about creating a mini-shell that mimics the behavior of Unix Bash shell using C. Key functionalities include managing foreground and background jobs along with other standard Bash shell functionalities. 
