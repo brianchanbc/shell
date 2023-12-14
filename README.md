@@ -1,2 +1,2 @@
 # Shell
-This project is about creating a mini-shell that mimics the behavior of Unix Bash shell using C. Key functionalities include managing foreground and background jobs along with other standard Bash shell functionalities. 
+This is a shell program in C that emulates the functionalities of the Unix Bash shell with the objective to facilitate smooth parallel execution of multiple jobs on operating systems.
